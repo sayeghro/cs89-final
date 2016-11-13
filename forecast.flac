@@ -1,0 +1,1 @@
+{ "code" : 401 , "error" : "Not Authorized" , "description" : "2016-10-25T11:32:13-04:00, Error ERCDPLTFRM-INVLDCHR occurred when accessing https://158.85.132.94:443/text-to-speech/api/v1/synthesize?accept=audio%2Fflac&amp;voice=en-US_AllisonVoice, " } 
