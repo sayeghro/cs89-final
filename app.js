@@ -205,11 +205,11 @@ function getDataBasedOnQuery(data){
   var key = ''/* MATTERMARK KEY REDACTED FOR PRIVACY REASONS */;
 
   //check to make sure we did not pass in a null query
-  if(data.context != null && data.entities != null){
+  if(data.entities != null){
     // Build the path, matching entities to their values
     var path = '/companies/?key=' + key;
     for (var i=0; i < data.entities.length; i++){
-      path = path + '&' + data.entities[i].entity + '=' + data.context[i].context;
+      path = path + '&' + data.entities[i].entity + '=' + data.entities[i].value;
     }
 
     // return the final

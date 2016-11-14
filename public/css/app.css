@@ -1,3 +1,6 @@
+
+@import url('https://fonts.googleapis.com/css?family=Open+Sans');
+
 * {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -5,9 +8,10 @@
 }
 
 body {
-  font-family: Helvetica Neue for IBM, Helvetica Neue, Helvetica, Arial, sans-serif;
+  font-family: Open Sans;
   margin: 0;
   padding: 0;
+  background: #19547b; /* fallback for old browsers */ background: -webkit-linear-gradient(to left, #19547b , #ffd89b); /* Chrome 10-25, Safari 5.1-6 */ background: linear-gradient(to left, #19547b , #ffd89b); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */         
 }
 
 div {
@@ -72,8 +76,8 @@ div {
   padding: 0.9375rem 0 0.625rem 0;
   margin: auto;
   text-align: left;
-  max-width: 25rem;
-  min-width: 9.375rem;
+  max-width: 100%;
+  min-width: 100%;
 }
 
 #scrollingChat {
@@ -153,7 +157,7 @@ div {
   right: 0;
   height: 0.5rem;
   width: 0.5rem;
-  background: #fff;
+  background: #19547b;
   border-top-right-radius: 1.25rem;
 }
 
@@ -161,7 +165,7 @@ div {
   position: relative;
   border-radius: 1.5625rem;
   font-size: 1rem;
-  color: #B5B5B5;
+  color: #19547b;
   letter-spacing: 0.015rem;
   line-height: 1.3125rem;
 }
@@ -177,7 +181,7 @@ div {
 
 .from-watson.latest.top p:before {
   content: ".";
-  color: #9855D4;
+  color: #323232;
   background-image: url("../img/marker_image.png");
   background-size: 0.3125rem 1.3125rem;
   position: absolute;
