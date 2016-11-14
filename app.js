@@ -27,6 +27,8 @@ var http = require('http');
 var uuid = require( 'uuid' );
 var vcapServices = require( 'vcap_services' );
 var basicAuth = require( 'basic-auth-connect' );
+var WatsonSpeech = require('watson-speech');
+
 
 // The app owner may optionally configure a cloudand db to track user input.
 // This cloudand db is not required, the app will operate without it.
@@ -97,35 +99,35 @@ app.post( '/api/message', function(req, res) {
  * @return {Object}          The response with the updated message
  */
 function updateMessage(res, input, data) {
-  
+
 	var watson = require('watson-developer-cloud');
 	var fs = require('fs');
-	
+
 	var text_to_speech = watson.text_to_speech({
 		username: '{7268f56c-aadf-4e17-ad68-e4733e345973}',
 		password: '{OtVclssZyogd}',
 		version: 'v1'
 	});
-  
+
   if(checkWeather(data)){
 	//console.log(data);
-	
+
 	var path = getLocationURL(data.context.long, data.context.lat);
 	//console.log(path);
-  
+
 	if(data.entities[1] != null){
 		var city_name = data.entities[1].value;
 		path = getCityURL(city_name);
 		//console.log(path);
 	}
-	
+
     var options = {
       host: 'api.wunderground.com',
       path: path
     };
 
 	var image = 'http://google.com';
-	
+
     http.get(options, function(resp){
       var chunkText = '';
       resp.on('data', function(chunk){
@@ -136,7 +138,7 @@ function updateMessage(res, input, data) {
         var params = [];
         if(chunkJSON.location) {
           var when = data.entities[0].value;
-          params.push ( chunkJSON.location.city );	
+          params.push ( chunkJSON.location.city );
           var forecast = null;
 		  //console.log(chunkJSON.forecast.txt_forecast);
           if ( when == 'today' ) {
@@ -162,9 +164,9 @@ function updateMessage(res, input, data) {
 	      };
 		// Pipe the synthesized text to a file.
 		text_to_speech.synthesize(params2).pipe(fs.createWriteStream('forecast.wav'));
-		
+
         }
-		
+
 		var open = require('open');
 		open(image);
 		/*
@@ -173,7 +175,7 @@ function updateMessage(res, input, data) {
 		app.use(express.static(__dirname + '/public'));
 		app.listen(8080);
 		*/
-		
+
         return res.json(data);
       });
     }).on('error', function(e){

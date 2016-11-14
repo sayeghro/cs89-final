@@ -19,10 +19,14 @@
     <div id="chat-column-holder" class="responsive-column content-column">
       <div class="chat-column">
         <div id="scrollingChat"></div>
-        <label for="textInput" class="inputOutline">
+        <label style="display:flex; justify-content:space-between; align-items: center;" for="textInput" class="inputOutline">
           <input id="textInput" class="input responsive-column"
             placeholder="Type something" type="text"
             onkeydown="ConversationPanel.inputKeyDown(event, this)">
+            <div id="recordButton" class="button-row nav-inverse-color">
+            <button id="button" class="nav-label">Record</button>
+            <button id="stop">Stop</button>
+            </div>
         </label>
       </div>
     </div>
@@ -40,5 +44,39 @@
   <script src="js/conversation.js"></script>
   <script src="js/payload.js"></script>
   <script src="js/global.js"></script>
+  <script src="watson-speech.js"></script>
+  <script src="bower_components/fetch/fetch.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+  <script>
+  document.querySelector('#button').onclick = function () {
+
+  fetch('/api/speech-to-text/token')
+  .then(function(response) {
+      return response.text();
+  }).then(function (token) {
+
+    var stream = WatsonSpeech.SpeechToText.recognizeMicrophone({
+        token: token,
+        outputElement: '#textInput' // CSS selector or DOM Element
+    });
+
+    stream.on('error', function(err) {
+        console.log(err);
+    });
+
+    document.querySelector('#stop').onclick = function() {
+      stream.stop();
+      $( "#textInput" ).focus(function() {
+        e = $.Event('keydown');
+        e.keyCode= 13; // enter
+        $('#textInput').trigger(e);
+      });
+    };
+
+  }).catch(function(error) {
+      console.log(error);
+  });
+};
+  </script>
 </body>
 </html>
