@@ -61,7 +61,10 @@
     });
 
     stream.on('error', function(err) {
-        console.log(err);
+      stream.stop();
+      e = $.Event('keydown');
+      e.keyCode= 13; // enter
+      $('#textInput').trigger(e);
     });
 
     document.querySelector('#stop').onclick = function() {
