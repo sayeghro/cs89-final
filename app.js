@@ -109,86 +109,76 @@ function updateMessage(res, input, data) {
 		version: 'v1'
 	});
 
-  if(checkWeather(data)){
-	//console.log(data);
+  // Query the MatterMark API
+  if(queryAPI(data)){
 
-	var path = getLocationURL(data.context.long, data.context.lat);
-	//console.log(path);
+  var path = getDataBasedOnQuery(data);
 
-	if(data.entities[1] != null){
-		var city_name = data.entities[1].value;
-		path = getCityURL(city_name);
-		//console.log(path);
-	}
-
+    // Set the options object to reflect the MatterMark API
     var options = {
-      host: 'api.wunderground.com',
+      host: 'api.mattermark.com',
       path: path
     };
 
-	var image = 'http://google.com';
-
+    // Read the chunk JSON
     http.get(options, function(resp){
       var chunkText = '';
+
+      // First convert to string
       resp.on('data', function(chunk){
         chunkText += chunk.toString('utf8');
       });
+
+      // Then convert to JSON
       resp.on('end', function(){
         var chunkJSON = JSON.parse(chunkText);
         var params = [];
-        if(chunkJSON.location) {
-          var when = data.entities[0].value;
-          params.push ( chunkJSON.location.city );
-          var forecast = null;
-		  //console.log(chunkJSON.forecast.txt_forecast);
-          if ( when == 'today' ) {
-            forecast = chunkJSON.forecast.txt_forecast.forecastday[0].fcttext;
-			image = chunkJSON.forecast.txt_forecast.forecastday[0].icon_url;
-          } else if ( when == 'tomorrow' ) {
-            forecast = chunkJSON.forecast.txt_forecast.forecastday[3].fcttext;
-			image = chunkJSON.forecast.txt_forecast.forecastday[3].icon_url;
-          } else if ( when == 'TDAT' ) {
-            forecast = chunkJSON.forecast.txt_forecast.forecastday[4].fcttext_metric;
-			image = chunkJSON.forecast.txt_forecast.forecastday[4].icon_url;
-          } else{
-            forecast = chunkJSON.forecast.txt_forecast.forecastday[0].fcttext;
-			image = chunkJSON.forecast.txt_forecast.forecastday[0].icon_url;
-          }
-          params.push ( forecast );
-          data.output.text = replaceParams ( data.output.text, params );
-		  console.log(forecast);
-		  var params2 = {
-			text: forecast,
-			voice: 'en-US_AllisonVoice',
-			accept: 'audio/wav'
-	      };
-		// Pipe the synthesized text to a file.
-		text_to_speech.synthesize(params2).pipe(fs.createWriteStream('forecast.wav'));
 
+        // Add each new company to the list passed to bluemix
+        for (var i = 0; i < chunkJSON.length; i++){
+          params.push ( chunkJSON.company[i] );
         }
 
-		var open = require('open');
-		open(image);
-		/*
-		var express = require('express');
-		var app = express();
-		app.use(express.static(__dirname + '/public'));
-		app.listen(8080);
-		*/
+
+          // Push the new Params
+          data.output.text = replaceParams ( data.output.text, params );
+        });
 
         return res.json(data);
-      });
+
     }).on('error', function(e){
-      console.log("failure!");
+      console.log(e);
     });
   }
   else{
     return res.json(data);
   }
 }
-function checkWeather(data){
-  return data.intents && data.intents.length > 0 && data.intents[0].intent === 'weather'
-    && data.entities && data.entities.length > 0 && data.entities[0].entity === 'day';
+
+function queryAPI(data){
+  console.log(data.entities);
+  return data.intents && data.intents.length > 0 && data.intents[0].intent === 'insights'
+    && data.entities && data.entities.length > 0 && checkEntities(data.entities);
+}
+
+function checkEntities(entities){
+  var possibleEntities = ['domain', 'company_name', 'mattermark_score',
+    'momentum_score', 'employees', 'employees_month_ago',
+    'employees_added_in_month', 'employees_mom', 'cached_uniques',
+    'cached_uniques_week_ago', 'uniques_wow', 'cached_uniques_month_ago',
+    'uniques_mom', 'cached_mobile_downloads', 'cached_mobile_downloads_week_ago',
+    'mobile_downloads_wow', 'cached_mobile_downloads_month_ago',
+    'mobile_downloads_mom', 'est_founding_date', 'stage', 'investors',
+    'total_funding', 'last_funding_date', 'last_funding_amount', 'location',
+    'state', 'has_mobile', 'has_google_play', 'has_itunes', 'play_category',
+    'itunes_category', 'business_models', 'industries', 'keywords', 'country']
+  for (var i = 0; i < entities.length; i++) {
+    var entity = entities[i];
+    if (!(entity in possibleEntities)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 function replaceParams(original, args){
@@ -204,19 +194,28 @@ function replaceParams(original, args){
   return original;
 }
 
-function getCityURL(city_name){
-  if(city_name != null){
-    return '/api/' + key + '/geolookup/forecast/conditions/q/NH/' + city_name + '.json';
+
+function getDataBasedOnQuery(data){
+  /* Unfortunately, though an interested VC firm allowed us use their key
+   * temporarily for development puposes, they insisted that the key not be left
+   * in the version of the software we turn in, as the MatterMark database is
+   * protected by multiple NDAs for the firm, which would be subject to legal
+   * ramifcations, and loss of the service if the key were to leak.
+  */
+  var key = ''/* MATTERMARK KEY REDACTED FOR PRIVACY REASONS */;
+
+  //check to make sure we did not pass in a null query
+  if(data.context != null && data.entities != null){
+    // Build the path, matching entities to their values
+    var path = '/companies/?key=' + key;
+    for (var i=0; i < data.entities.length; i++){
+      path = path + '&' + data.entities[i].entity + '=' + data.context[i].context;
+    }
+
+    // return the final
+    return path;
   }
 };
-
-function getLocationURL(lat, long){
-  if(lat != null && long != null){
-    return '/api/' + key + '/geolookup/forecast/q/'  + long + ',' + lat + '.json';
-  }
-};
-
-var key ="c41bb5bb50232a58";
 
 
 if ( cloudantUrl ) {
