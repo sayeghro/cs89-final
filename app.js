@@ -156,7 +156,6 @@ function updateMessage(res, input, data) {
 }
 
 function queryAPI(data){
-  console.log(data.entities);
   return data.intents && data.intents.length > 0 && data.intents[0].intent === 'insights'
     && data.entities && data.entities.length > 0 && checkEntities(data.entities);
 }
